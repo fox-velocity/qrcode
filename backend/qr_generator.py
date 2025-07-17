@@ -371,6 +371,13 @@ def create_qr_svg(qr_generator: QRGenerator, color: str = "#000000",
                  marker_shape: str = "square", dot_shape: str = "square") -> str:
     """Create QR code as SVG"""
     
+    # Validate and sanitize color
+    try:
+        from PIL import ImageColor
+        ImageColor.getrgb(color)
+    except:
+        color = "#000000"  # Default to black if color is invalid
+    
     module_count = qr_generator.get_module_count()
     size = 512
     cell_size = size / module_count
