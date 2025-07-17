@@ -296,6 +296,14 @@ def create_qr_image(qr_generator: QRGenerator, color: str = "#000000",
                    logo_base64: Optional[str] = None, logo_size: int = 30) -> str:
     """Create QR code image and return as base64"""
     
+    # Validate and sanitize color
+    try:
+        # Try to parse the color - if it fails, use default black
+        from PIL import ImageColor
+        ImageColor.getrgb(color)
+    except:
+        color = "#000000"  # Default to black if color is invalid
+    
     module_count = qr_generator.get_module_count()
     size = 512
     cell_size = size / module_count
@@ -332,7 +340,10 @@ def create_qr_image(qr_generator: QRGenerator, color: str = "#000000",
     if logo_base64:
         try:
             # Decode base64 logo
-            logo_data = base64.b64decode(logo_base64.split(',')[1])
+            if ',' in logo_base64:
+                logo_data = base64.b64decode(logo_base64.split(',')[1])
+            else:
+                logo_data = base64.b64decode(logo_base64)
             logo_img = Image.open(BytesIO(logo_data))
             
             # Resize logo
