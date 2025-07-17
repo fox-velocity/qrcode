@@ -101,3 +101,98 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Reorganize HTML QR code generator for better syntax and replace external library with custom implementation. Features include vCard generation, custom colors, logo overlay, shape customization, and PNG/SVG downloads."
+
+backend:
+  - task: "Custom QR Code Generation Library"
+    implemented: false
+    working: "NA"
+    file: "qr_generator.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Starting implementation of custom QR code library"
+
+  - task: "vCard Generation API"
+    implemented: false
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Need to implement vCard generation endpoints"
+
+  - task: "Image Processing & Logo Overlay"
+    implemented: false
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Need to implement logo upload and overlay functionality"
+
+frontend:
+  - task: "QR Code Generator UI"
+    implemented: false
+    working: "NA"
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Need to create comprehensive QR code generator interface"
+
+  - task: "Color Picker Implementation"
+    implemented: false
+    working: "NA"
+    file: "ColorPicker.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Need to implement HSL color picker with sliders"
+
+  - task: "Download Functionality"
+    implemented: false
+    working: "NA"
+    file: "App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Need to implement PNG/SVG download functionality"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Custom QR Code Generation Library"
+    - "vCard Generation API"
+    - "Image Processing & Logo Overlay"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Starting implementation of custom QR code generator. Will replace external library with custom implementation and reorganize code for better structure."
