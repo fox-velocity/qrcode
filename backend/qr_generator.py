@@ -153,17 +153,25 @@ class QRGenerator:
             bit = (format_info >> i) & 1
             
             if i < 6:
-                self.modules[8][i] = bit
-                self.modules[self.module_count - 1 - i][8] = bit
+                if 8 < self.module_count and i < self.module_count:
+                    self.modules[8][i] = bit
+                if self.module_count - 1 - i >= 0 and 8 < self.module_count:
+                    self.modules[self.module_count - 1 - i][8] = bit
             elif i < 8:
-                self.modules[8][i + 1] = bit
-                self.modules[self.module_count - 7 + i][8] = bit
+                if 8 < self.module_count and i + 1 < self.module_count:
+                    self.modules[8][i + 1] = bit
+                if self.module_count - 7 + i >= 0 and self.module_count - 7 + i < self.module_count and 8 < self.module_count:
+                    self.modules[self.module_count - 7 + i][8] = bit
             elif i < 9:
-                self.modules[7][8] = bit
-                self.modules[8][self.module_count - 8] = bit
+                if 7 < self.module_count and 8 < self.module_count:
+                    self.modules[7][8] = bit
+                if 8 < self.module_count and self.module_count - 8 >= 0:
+                    self.modules[8][self.module_count - 8] = bit
             else:
-                self.modules[14 - i][8] = bit
-                self.modules[8][self.module_count - 15 + i] = bit
+                if 14 - i >= 0 and 8 < self.module_count:
+                    self.modules[14 - i][8] = bit
+                if 8 < self.module_count and self.module_count - 15 + i >= 0 and self.module_count - 15 + i < self.module_count:
+                    self.modules[8][self.module_count - 15 + i] = bit
                 
     def _generate_format_info(self):
         """Generate format information bits"""
