@@ -212,9 +212,12 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "QR Code Generator UI"
+    - "Color Picker Implementation"
+    - "Download Functionality"
   stuck_tasks: []
-  test_all: false
+  test_all: true
   test_priority: "high_first"
 
 agent_communication:
