@@ -202,7 +202,7 @@ frontend:
     file: "QRCodeGenerator.js"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -210,6 +210,9 @@ frontend:
       - working: true
         agent: "main"
         comment: "Implemented PNG and SVG download with proper filenames including FoxVelocityCreation branding"
+      - working: true
+        agent: "testing"
+        comment: "Download functionality working perfectly. Both PNG and SVG download buttons display correct French text ('Télécharger PNG' and 'Télécharger SVG'). Buttons are properly disabled when no QR code is generated and enabled after successful generation. Download functions (downloadPNG, downloadSVG) correctly construct filenames with FoxVelocityCreation branding format (e.g., 'MarieDuboisFoxVelocityCreation.png'). API endpoints (/api/download-png and /api/download-svg) are called with proper parameters including all vCard data, color settings, shapes, and logo. File downloads trigger correctly when buttons are clicked."
 
 metadata:
   created_by: "main_agent"
