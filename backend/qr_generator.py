@@ -117,7 +117,9 @@ class QRGenerator:
                     if ((r == 0 or r == 6) and (0 <= c <= 6)) or \
                        ((c == 0 or c == 6) and (0 <= r <= 6)) or \
                        (2 <= r <= 4 and 2 <= c <= 4):
-                        self.modules[row + r][col + c] = True
+                        # Check bounds before accessing
+                        if 0 <= row + r < self.module_count and 0 <= col + c < self.module_count:
+                            self.modules[row + r][col + c] = True
                         
     def _place_separators(self):
         """Place separator patterns around finder patterns"""
