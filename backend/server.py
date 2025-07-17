@@ -40,6 +40,28 @@ class StatusCheck(BaseModel):
 class StatusCheckCreate(BaseModel):
     client_name: str
 
+class QRCodeRequest(BaseModel):
+    name: str = ""
+    phone: str = ""
+    email: str = ""
+    company: str = ""
+    title: str = ""
+    url_work: str = ""
+    url_home: str = ""
+    color: str = "#000000"
+    marker_shape: str = "square"  # square, circle, rounded
+    dot_shape: str = "square"     # square, circle, rounded
+    logo_base64: Optional[str] = None
+    logo_size: int = 30
+
+class QRCodeResponse(BaseModel):
+    qr_image_base64: str
+    vcard_content: str
+
+class QRCodeSVGResponse(BaseModel):
+    svg_content: str
+    vcard_content: str
+
 # Add your routes to the router instead of directly to app
 @api_router.get("/")
 async def root():
