@@ -79,6 +79,197 @@ async def get_status_checks():
     status_checks = await db.status_checks.find().to_list(1000)
     return [StatusCheck(**status_check) for status_check in status_checks]
 
+@api_router.post("/qr-code", response_model=QRCodeResponse)
+async def generate_qr_code(request: QRCodeRequest):
+    """Generate QR code with vCard data"""
+    try:
+        # Generate vCard content
+        vcard_content = generate_vcard(
+            name=request.name,
+            phone=request.phone,
+            email=request.email,
+            company=request.company,
+            title=request.title,
+            url_work=request.url_work,
+            url_home=request.url_home
+        )
+        
+        # Create QR code generator
+        qr = QRGenerator(version=1, error_correction=ErrorCorrectionLevel.H)
+        qr.add_data(vcard_content)
+        qr.make()
+        
+        # Create QR code image
+        qr_image_base64 = create_qr_image(
+            qr_generator=qr,
+            color=request.color,
+            marker_shape=request.marker_shape,
+            dot_shape=request.dot_shape,
+            logo_base64=request.logo_base64,
+            logo_size=request.logo_size
+        )
+        
+        return QRCodeResponse(
+            qr_image_base64=qr_image_base64,
+            vcard_content=vcard_content
+        )
+        
+    except Exception as e:
+        logger.error(f"Error generating QR code: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error generating QR code: {str(e)}")
+
+@api_router.post("/qr-code-svg", response_model=QRCodeSVGResponse)
+async def generate_qr_code_svg(request: QRCodeRequest):
+    """Generate QR code as SVG"""
+    try:
+        # Generate vCard content
+        vcard_content = generate_vcard(
+            name=request.name,
+            phone=request.phone,
+            email=request.email,
+            company=request.company,
+            title=request.title,
+            url_work=request.url_work,
+            url_home=request.url_home
+        )
+        
+        # Create QR code generator
+        qr = QRGenerator(version=1, error_correction=ErrorCorrectionLevel.H)
+        qr.add_data(vcard_content)
+        qr.make()
+        
+        # Create QR code SVG
+        svg_content = create_qr_svg(
+            qr_generator=qr,
+            color=request.color,
+            marker_shape=request.marker_shape,
+            dot_shape=request.dot_shape
+        )
+        
+        return QRCodeSVGResponse(
+            svg_content=svg_content,
+            vcard_content=vcard_content
+        )
+        
+    except Exception as e:
+        logger.error(f"Error generating QR code SVG: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error generating QR code SVG: {str(e)}")
+
+@api_router.get("/download-png")
+async def download_png(
+    name: str,
+    phone: str = "",
+    email: str = "",
+    company: str = "",
+    title: str = "",
+    url_work: str = "",
+    url_home: str = "",
+    color: str = "#000000",
+    marker_shape: str = "square",
+    dot_shape: str = "square",
+    logo_base64: str = None,
+    logo_size: int = 30
+):
+    """Download QR code as PNG file"""
+    try:
+        # Generate vCard content
+        vcard_content = generate_vcard(
+            name=name,
+            phone=phone,
+            email=email,
+            company=company,
+            title=title,
+            url_work=url_work,
+            url_home=url_home
+        )
+        
+        # Create QR code generator
+        qr = QRGenerator(version=1, error_correction=ErrorCorrectionLevel.H)
+        qr.add_data(vcard_content)
+        qr.make()
+        
+        # Create QR code image
+        qr_image_base64 = create_qr_image(
+            qr_generator=qr,
+            color=color,
+            marker_shape=marker_shape,
+            dot_shape=dot_shape,
+            logo_base64=logo_base64,
+            logo_size=logo_size
+        )
+        
+        # Extract image data
+        image_data = base64.b64decode(qr_image_base64.split(',')[1])
+        
+        # Create filename
+        first_name = name.split(' ')[0] if name else 'QRCode'
+        last_name = ''.join(name.split(' ')[1:]) if len(name.split(' ')) > 1 else ''
+        filename = f"{first_name}{last_name}FoxVelocityCreation.png"
+        
+        return Response(
+            content=image_data,
+            media_type="image/png",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+        
+    except Exception as e:
+        logger.error(f"Error downloading PNG: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error downloading PNG: {str(e)}")
+
+@api_router.get("/download-svg")
+async def download_svg(
+    name: str,
+    phone: str = "",
+    email: str = "",
+    company: str = "",
+    title: str = "",
+    url_work: str = "",
+    url_home: str = "",
+    color: str = "#000000",
+    marker_shape: str = "square",
+    dot_shape: str = "square"
+):
+    """Download QR code as SVG file"""
+    try:
+        # Generate vCard content
+        vcard_content = generate_vcard(
+            name=name,
+            phone=phone,
+            email=email,
+            company=company,
+            title=title,
+            url_work=url_work,
+            url_home=url_home
+        )
+        
+        # Create QR code generator
+        qr = QRGenerator(version=1, error_correction=ErrorCorrectionLevel.H)
+        qr.add_data(vcard_content)
+        qr.make()
+        
+        # Create QR code SVG
+        svg_content = create_qr_svg(
+            qr_generator=qr,
+            color=color,
+            marker_shape=marker_shape,
+            dot_shape=dot_shape
+        )
+        
+        # Create filename
+        first_name = name.split(' ')[0] if name else 'QRCode'
+        last_name = ''.join(name.split(' ')[1:]) if len(name.split(' ')) > 1 else ''
+        filename = f"{first_name}{last_name}FoxVelocityCreation.svg"
+        
+        return Response(
+            content=svg_content,
+            media_type="image/svg+xml",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+        
+    except Exception as e:
+        logger.error(f"Error downloading SVG: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error downloading SVG: {str(e)}")
+
 # Include the router in the main app
 app.include_router(api_router)
 
