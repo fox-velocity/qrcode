@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
 const API = `${BACKEND_URL}/api`;
 
 const QRCodeGenerator = () => {
@@ -48,10 +48,8 @@ const QRCodeGenerator = () => {
     let r = parseInt(hex.slice(1, 3), 16) / 255;
     let g = parseInt(hex.slice(3, 5), 16) / 255;
     let b = parseInt(hex.slice(5, 7), 16) / 255;
-
     let max = Math.max(r, g, b), min = Math.min(r, g, b);
     let h, s, l = (max + min) / 2;
-
     if (max === min) {
       h = s = 0;
     } else {
@@ -64,7 +62,6 @@ const QRCodeGenerator = () => {
       }
       h /= 6;
     }
-
     return [h * 360, s * 100, l * 100];
   };
 
@@ -109,32 +106,50 @@ const QRCodeGenerator = () => {
     let hex = e.target.value;
     if (hex.charAt(0) !== '#') hex = '#' + hex;
     if (!/^#[0-9A-F]{6}$/i.test(hex)) return;
-
     const [h, s, l] = hexToHsl(hex);
-    
+
     let gradientValue;
     if (l > 50) {
       gradientValue = 100 + (l - 50) * 2;
     } else {
       gradientValue = l * 2;
     }
-    
-    setQrSettings(prev => ({ 
-      ...prev, 
+
+    setQrSettings(prev => ({
+      ...prev,
       color: hex,
       primaryHue: h,
       gradient: gradientValue
     }));
   };
 
+  // Generate vCard
+  const generateVCard = () => {
+    const vCard = `BEGIN:VCARD
+VERSION:3.0
+FN:${formData.name}
+TEL:${formData.phone}
+EMAIL:${formData.email}
+ORG:${formData.company}
+TITLE:${formData.title}
+URL;TYPE=WORK:${formData.url_work}
+URL;TYPE=HOME:${formData.url_home}
+END:VCARD`;
+
+    return vCard;
+  };
+
   // Generate QR code
   const generateQRCode = async () => {
     setIsGenerating(true);
     setError(null);
-
     try {
+      const vCard = generateVCard();
+
+      console.log('Sending vCard to API:', vCard);
+
       const response = await axios.post(`${API}/qr-code`, {
-        ...formData,
+        data: vCard,
         color: qrSettings.color,
         marker_shape: qrSettings.markerShape,
         dot_shape: qrSettings.dotShape,
@@ -142,10 +157,12 @@ const QRCodeGenerator = () => {
         logo_size: qrSettings.logoSize
       });
 
+      console.log('Received response from API:', response.data);
+
       setQrImage(response.data.qr_image_base64);
     } catch (err) {
-      setError('Erreur lors de la génération du QR code');
       console.error('Error generating QR code:', err);
+      setError('Erreur lors de la génération du QR code');
     } finally {
       setIsGenerating(false);
     }
@@ -156,25 +173,16 @@ const QRCodeGenerator = () => {
     const firstName = formData.name.split(' ')[0] || 'QRCode';
     const lastName = formData.name.split(' ').slice(1).join('') || '';
     const filename = `${firstName}${lastName}FoxVelocityCreation.png`;
-
     const params = new URLSearchParams({
-      name: formData.name,
-      phone: formData.phone,
-      email: formData.email,
-      company: formData.company,
-      title: formData.title,
-      url_work: formData.url_work,
-      url_home: formData.url_home,
+      data: generateVCard(),
       color: qrSettings.color,
       marker_shape: qrSettings.markerShape,
       dot_shape: qrSettings.dotShape,
       logo_size: qrSettings.logoSize.toString()
     });
-
     if (qrSettings.logo) {
       params.append('logo_base64', qrSettings.logo);
     }
-
     const link = document.createElement('a');
     link.href = `${API}/download-png?${params}`;
     link.download = filename;
@@ -186,20 +194,12 @@ const QRCodeGenerator = () => {
     const firstName = formData.name.split(' ')[0] || 'QRCode';
     const lastName = formData.name.split(' ').slice(1).join('') || '';
     const filename = `${firstName}${lastName}FoxVelocityCreation.svg`;
-
     const params = new URLSearchParams({
-      name: formData.name,
-      phone: formData.phone,
-      email: formData.email,
-      company: formData.company,
-      title: formData.title,
-      url_work: formData.url_work,
-      url_home: formData.url_home,
+      data: generateVCard(),
       color: qrSettings.color,
       marker_shape: qrSettings.markerShape,
       dot_shape: qrSettings.dotShape
     });
-
     const link = document.createElement('a');
     link.href = `${API}/download-svg?${params}`;
     link.download = filename;
@@ -218,7 +218,6 @@ const QRCodeGenerator = () => {
           <h2 className="text-2xl font-bold text-gray-800 mb-6">
             Générateur de QR Code Personnalisé
           </h2>
-
           {/* Form Fields */}
           <div className="space-y-4 mb-6">
             <input
@@ -278,14 +277,13 @@ const QRCodeGenerator = () => {
               className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-
           {/* Color Picker */}
           <div className="mb-6">
-            <div 
+            <div
               className="h-12 rounded-md mb-4 border border-gray-300"
               style={{ backgroundColor: qrSettings.color }}
             ></div>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -300,7 +298,7 @@ const QRCodeGenerator = () => {
                   className="w-full h-3 bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-cyan-500 via-blue-500 via-purple-500 to-red-500 rounded-lg appearance-none cursor-pointer"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Dégradé
@@ -314,7 +312,7 @@ const QRCodeGenerator = () => {
                   className="w-full h-3 bg-gradient-to-r from-black to-white rounded-lg appearance-none cursor-pointer"
                 />
               </div>
-              
+
               <input
                 type="text"
                 value={qrSettings.color}
@@ -324,7 +322,6 @@ const QRCodeGenerator = () => {
               />
             </div>
           </div>
-
           {/* Logo Upload */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -336,7 +333,7 @@ const QRCodeGenerator = () => {
               onChange={handleLogoUpload}
               className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
-            
+
             {qrSettings.logo && (
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -353,7 +350,6 @@ const QRCodeGenerator = () => {
               </div>
             )}
           </div>
-
           {/* Shape Options */}
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
@@ -371,7 +367,7 @@ const QRCodeGenerator = () => {
                 <option value="rounded">Arrondis</option>
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Forme des points :
@@ -388,7 +384,6 @@ const QRCodeGenerator = () => {
               </select>
             </div>
           </div>
-
           {/* Action Buttons */}
           <div className="flex flex-wrap gap-4 mb-6">
             <button
@@ -398,7 +393,7 @@ const QRCodeGenerator = () => {
             >
               {isGenerating ? 'Génération...' : 'Générer QR Code'}
             </button>
-            
+
             <button
               onClick={downloadPNG}
               disabled={!qrImage}
@@ -406,7 +401,7 @@ const QRCodeGenerator = () => {
             >
               Télécharger PNG
             </button>
-            
+
             <button
               onClick={downloadSVG}
               disabled={!qrImage}
@@ -415,14 +410,12 @@ const QRCodeGenerator = () => {
               Télécharger SVG
             </button>
           </div>
-
           {/* Error Message */}
           {error && (
             <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
               {error}
             </div>
           )}
-
           {/* QR Code Display */}
           {qrImage && (
             <div className="text-center">
@@ -430,9 +423,9 @@ const QRCodeGenerator = () => {
                 QR Code Généré
               </h3>
               <div className="inline-block p-4 bg-white border border-gray-300 rounded-lg">
-                <img 
-                  src={qrImage} 
-                  alt="QR Code généré" 
+                <img
+                  src={qrImage}
+                  alt="QR Code généré"
                   className="max-w-full h-auto"
                 />
               </div>
